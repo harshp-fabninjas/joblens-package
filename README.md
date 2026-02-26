@@ -33,6 +33,12 @@ php artisan migrate
 
 ## Usage
 
+### Detect Slow Jobs From View
+
+```bash
+http://your_base_app_url/slowjobs
+```
+
 ### Detect Slow Jobs Command
 
 ```bash
