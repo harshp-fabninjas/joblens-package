@@ -22,7 +22,12 @@ class JobLensServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        // Publish the migration file for creating the slow_jobs table
+        // Register the event listener to track slow jobs
+        TrackSlowJobs::register();
+
+        // Register the event listener to analyze job performance
+        JobAnalysis::register();
+
         if ($this->app->runningInConsole()) {
             // Migration file
             $this->publishes([
@@ -34,19 +39,19 @@ class JobLensServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../config/joblens.php' => config_path('joblens.php'),
             ], 'joblens-config');
-        }
 
-        // Register the event listener to track slow jobs
-        TrackSlowJobs::register();
-
-        JobAnalysis::register();
-
-        // Register the console command to show slow jobs
-        if ($this->app->runningInConsole()) {
+            // Register the console command to show slow jobs
             $this->commands([
                 SlowJobsCommand::class,
             ]);
         }
+
+        // Load the routes
+        $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
+        // Load the views
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'joblens');
+
     }
 
 }
