@@ -268,6 +268,69 @@
             font-size: 12px;
         }
 
+        /* ── Pagination ───────────────────────────── */
+        .pagination-wrapper {
+            padding: 12px 20px 16px;
+            border-top: 1px solid #1c1c22;
+            background: #0c0c0e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            font-size: 12px;
+            color: #71717a;
+        }
+
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            justify-content: flex-end;
+            list-style: none;
+            font-size: 13px;
+        }
+
+        .pagination li {
+            display: inline-flex;
+        }
+
+        .pagination a,
+        .pagination span {
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid #27272a;
+            background: #18181b;
+            color: #e4e4e7;
+            text-decoration: none;
+        }
+
+        .pagination a:hover {
+            border-color: #4b4b55;
+            background: #27272a;
+        }
+
+        .pagination .active span {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.12);
+            color: #c7d2fe;
+        }
+
+        .pagination .disabled span {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        @media (max-width: 640px) {
+            .pagination-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
         /* ── Empty ───────────────────────────────── */
         .empty {
             padding: 56px 20px;
@@ -372,13 +435,55 @@
                     @endforeach
                     </tbody>
                 </table>
+
+                @if($jobs instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator && $jobs->hasPages())
+                    <div class="pagination-wrapper">
+                        <div class="pagination-info">
+                            Showing {{ $jobs->firstItem() }} to {{ $jobs->lastItem() }} of {{ $jobs->total() }} results
+                        </div>
+                        <ul class="pagination">
+                            {{-- Previous --}}
+                            <li class="page-item {{ $jobs->onFirstPage() ? 'disabled' : '' }}">
+                                @if($jobs->onFirstPage())
+                                    <span>Previous</span>
+                                @else
+                                    <a href="{{ $jobs->previousPageUrl() }}" rel="prev">Previous</a>
+                                @endif
+                            </li>
+
+                            {{-- Page numbers (window around current) --}}
+                            @php
+                                $start = max(1, $jobs->currentPage() - 1);
+                                $end   = min($jobs->lastPage(), $jobs->currentPage() + 1);
+                            @endphp
+                            @for($page = $start; $page <= $end; $page++)
+                                <li class="page-item {{ $page === $jobs->currentPage() ? 'active' : '' }}">
+                                    @if($page === $jobs->currentPage())
+                                        <span>{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $jobs->url($page) }}">{{ $page }}</a>
+                                    @endif
+                                </li>
+                            @endfor
+
+                            {{-- Next --}}
+                            <li class="page-item {{ $jobs->hasMorePages() ? '' : 'disabled' }}">
+                                @if($jobs->hasMorePages())
+                                    <a href="{{ $jobs->nextPageUrl() }}" rel="next">Next</a>
+                                @else
+                                    <span>Next</span>
+                                @endif
+                            </li>
+                        </ul>
+                    </div>
+                @endif
             @else
                 <div class="empty">
                     <div class="empty-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
                     </div>
                     <h3>All clear</h3>
-                    <p>No slow jobs detected yet. When a job exceeds {{ $thresholdMs }}ms it will appear here.</p>
+                    <p>No slow jobs detected yet.</p>
                 </div>
             @endif
         </div>

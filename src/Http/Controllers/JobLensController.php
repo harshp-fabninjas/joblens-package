@@ -11,7 +11,7 @@ class JobLensController extends Controller
     {
         $jobs = DB::table('slow_jobs')
             ->latest()
-            ->get();
+            ->paginate(15);
 
         return view('joblens::slow-jobs', compact('jobs'));
     }
